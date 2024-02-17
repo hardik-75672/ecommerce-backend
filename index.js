@@ -21,7 +21,7 @@ const crypto = require("crypto");
 const { User } = require("./model/user.js");
 const { sanitize, cookieExtractor, auth } = require("./service/commen.js");
 var jwt = require('jsonwebtoken');
-
+const path = require('path');
 const SECRET_KEY='SECRET_KEY';
 
 //jwt options
@@ -66,7 +66,7 @@ server.post('/webhook', express.raw({type: 'application/json'}), (request, respo
 
 //middlewares
 // server.use(express.raw({type: 'application/json'}));
-server.use(express.static('build'))
+server.use(express.static(path.resolve(__dirname, 'build')))
 server.use(cookieParser());
 server.use(
   session({

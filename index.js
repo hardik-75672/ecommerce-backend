@@ -21,7 +21,6 @@ const crypto = require("crypto");
 const { User } = require("./model/user.js");
 const { sanitize, cookieExtractor, auth } = require("./service/commen.js");
 var jwt = require('jsonwebtoken');
-const path = require('path');
 const SECRET_KEY='SECRET_KEY';
 
 //jwt options

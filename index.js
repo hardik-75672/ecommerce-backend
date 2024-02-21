@@ -19,10 +19,12 @@ const ExtractJwt = require('passport-jwt').ExtractJwt;
 const passport = require("passport");
 const crypto = require("crypto");
 const { User } = require("./model/user.js");
-const { sanitize, cookieExtractor, auth } = require("./service/commen.js");
+const { sanitize, cookieExtractor, auth, sendMail } = require("./service/commen.js");
 var jwt = require('jsonwebtoken');
 const SECRET_KEY='SECRET_KEY';
 
+
+// async..await is not allowed in global scope, must use a wrapper
 //jwt options
 var opts = {}
 opts.jwtFromRequest = cookieExtractor;
@@ -33,7 +35,7 @@ opts.secretOrKey = 'SECRET_KEY';
 
 // TODO: we will capture actual order after deploying out server live on public URL
 
-const endpointSecret = "  whsec_cf6f83c48cb6023acbff0071c46b183773ee86daf121445b835573b708bd479f";
+const endpointSecret = "whsec_cf6f83c48cb6023acbff0071c46b183773ee86daf121445b835573b708bd479f";
 
 server.post('/webhook', express.raw({type: 'application/json'}), (request, response) => {
   const sig = request.headers['stripe-signature'];
@@ -62,7 +64,40 @@ server.post('/webhook', express.raw({type: 'application/json'}), (request, respo
   // Return a 200 response to acknowledge receipt of the event
   response.send();
 });
+server.post('/auth/reset-password-request',express.raw({type: 'application/json'}),async (req, res) => {
+  const email1 = req.body;
+  const stringData = email1.toString('utf8');
+  const dataObject = JSON.parse(stringData);
+  console.log(dataObject)
+  const user = await User.findOne({ email: dataObject.email });
+ console.log(user)
+  if (user) {
+  console.log("ko")
 
+    const token = crypto.randomBytes(48).toString('hex');
+    user.resetPasswordToken = token;
+    await user.save();
+    console.log(token)
+
+    // Also set token in email
+    const resetPageLink =
+      'http://localhost:8080/reset-password?token=' + token + '&email=' + email1;
+    const subject = 'reset password for e-commerce';
+    const html = `<p>Click <a href='${resetPageLink}'>here</a> to Reset Password</p>`;
+
+    // lets send email and a token in the mail body so we can verify that user has clicked right link
+
+    if (dataObject.email) {
+      const response = await sendMail({ to: dataObject.email, subject, html });
+      res.json(response);
+    } else {
+      res.sendStatus(400);
+    }
+  } else {
+    console.log("lol")
+    res.sendStatus(400);
+  }
+})
 //middlewares
 // server.use(express.raw({type: 'application/json'}));
 server.use(express.static(path.resolve(__dirname, 'build')))
@@ -88,9 +123,11 @@ server.use("/products",auth(), productRouter.router);
 server.use("/category", auth(),categoryRouter.router);
 server.use("/brands", auth(),brandRouter.router);
 server.use("/users", auth(),userRouter.router);
+console.log("op")
 server.use("/auth", authRouter.router);
 server.use("/cart", auth(),cartRouter.router);
 server.use("/orders", auth(),orderRouter.router);
+
 server.get('*', (req, res) =>
   res.sendFile(path.resolve('build', 'index.html'))
 );

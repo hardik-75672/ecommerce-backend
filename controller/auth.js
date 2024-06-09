@@ -38,8 +38,9 @@ exports.createUser = async (req, res) => {
 
 exports.loginUser = async (req, res) => {
   const user = req.user;
+  console.log("sssss", user);
   res
-    .cookie('jwt', user.token, {
+    .cookie("jwt", user.token, {
       expires: new Date(Date.now() + 3600000),
       httpOnly: true,
     })
@@ -49,47 +50,56 @@ exports.loginUser = async (req, res) => {
 
 exports.resetPasswordRequest = async (req, res) => {
   const email1 = req.body;
-  const stringData = email1.toString('utf8');
+  const stringData = email1.toString("utf8");
   const dataObject = JSON.parse(stringData);
-  console.log(dataObject)
+  console.log(dataObject);
   const user = await User.findOne({ email: dataObject.email });
- console.log(user)
+  console.log(user);
   if (user) {
-  console.log("ko")
+    console.log("ko");
 
-    const token = crypto.randomBytes(48).toString('hex');
+    const token = crypto.randomBytes(48).toString("hex");
     user.resetPasswordToken = token;
     await user.save();
-    console.log(token)
+    console.log(token);
 
     // Also set token in email
     const resetPageLink =
-      'http://localhost:8080/reset-password?token=' + token + '&email=' + email1;
-    const subject = 'reset password for e-commerce';
+      "http://localhost:8080/reset-password?token=" +
+      token +
+      "&email=" +
+      email1;
+    const subject = "reset password for e-commerce";
     const html = `<p>Click <a href='${resetPageLink}'>here</a> to Reset Password</p>`;
 
     // lets send email and a token in the mail body so we can verify that user has clicked right link
 
     if (dataObject.email) {
       const response = await sendMail({ to: dataObject.email, subject, html });
+      console.log("erererererererere");
+
       res.json(response);
     } else {
+      console.log("eror");
       res.sendStatus(400);
     }
   } else {
-    console.log("lol")
+    console.log("lol");
     res.sendStatus(400);
   }
 };
 
 exports.resetPassword = async (req, res) => {
-  console.log("op")
+  console.log("op");
   const { email, password, token } = req.body;
   const email1 = JSON.parse(email);
-  const mainEmail=email1.email;
-  console.log(mainEmail)
+  const mainEmail = email1.email;
+  console.log(mainEmail);
 
-  const user = await User.findOne({ email: mainEmail, resetPasswordToken: token });
+  const user = await User.findOne({
+    email: mainEmail,
+    resetPasswordToken: token,
+  });
 
   if (user) {
     const salt = crypto.randomBytes(16);
@@ -98,12 +108,12 @@ exports.resetPassword = async (req, res) => {
       salt,
       310000,
       32,
-      'sha256',
+      "sha256",
       async function (err, hashedPassword) {
         user.password = hashedPassword;
         user.salt = salt;
         await user.save();
-        const subject = 'password successfully reset for e-commerce';
+        const subject = "password successfully reset for e-commerce";
         const html = `<p>Successfully able to Reset Password</p>`;
         if (mainEmail) {
           const response = await sendMail({ to: mainEmail, subject, html });
@@ -114,24 +124,24 @@ exports.resetPassword = async (req, res) => {
       }
     );
   } else {
-    console.log("lolo")
+    console.log("lolo");
     res.sendStatus(400);
   }
 };
 exports.checkAuth = async (req, res) => {
-  if(req.user){
-// console.log("opopo")
+  if (req.user) {
+    // console.log("opopo")
     res.json(req.user);
-  }else{
+  } else {
     req.sendStatus(404);
   }
 };
 
 exports.logout = async (req, res) => {
   res
-    .cookie('jwt', null, {
+    .cookie("jwt", null, {
       expires: new Date(Date.now()),
       httpOnly: true,
     })
-    .sendStatus(200)
+    .sendStatus(200);
 };

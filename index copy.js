@@ -131,21 +131,21 @@ server.use(
 server.use(passport.authenticate("session"));
 server.use(
   cors({
-    // origin: "http://localhost:8080",
+    // origin:"http://localhost:8080",
     exposedHeaders: ["X-Total-Count"],
   })
 );
 //payments
 server.use(express.json());
 
-server.use("/products", productRouter.router);
-server.use("/category", categoryRouter.router);
-server.use("/brands", brandRouter.router);
-server.use("/users", userRouter.router);
+server.use("/products", auth(), productRouter.router);
+server.use("/category", auth(), categoryRouter.router);
+server.use("/brands", auth(), brandRouter.router);
+server.use("/users", auth(), userRouter.router);
 console.log("op");
 server.use("/auth", authRouter.router);
 server.use("/cart", auth(), cartRouter.router);
-server.use("/orders", orderRouter.router);
+server.use("/orders", auth(), orderRouter.router);
 
 server.get("*", (req, res) =>
   res.sendFile(path.resolve("build", "index.html"))
@@ -266,6 +266,13 @@ async function main() {
   console.log("database connected");
 }
 
+function isAuth(req, res, done) {
+  if (req.user) {
+    done();
+  } else {
+    res.send(401);
+  }
+}
 // server.get()
 server.listen(8080, () => {
   console.log("server connected");

@@ -3,15 +3,27 @@ const { sendMail } = require("../service/commen");
 
 exports.fetchOrdersByUser = async (req, res) => {
     const { id } = req.user;
+    console.log(id)
     try {
       const orders = await Order.find({ user: id });
-      // const result = await orders.populate('products');
-      // console.log(orders)
       res.status(200).json(orders);
     } catch (err) {
       res.status(400).json(err);
     }
   };
+
+  exports.fetchOrders = async (req, res) => {
+    const { id } = req.params;
+    try {
+      const orders = await Order.find({ user: id });
+      console.log("ss")
+      res.status(200).json(orders);
+    } catch (err) {
+      res.status(400).json(err);
+    }
+  };
+ 
+
 
   exports.createOrder = async (req, res) => {
     const order = new Order(req.body);
@@ -151,29 +163,8 @@ exports.fetchOrdersByUser = async (req, res) => {
           <!-- start body -->
           <table border="0" cellpadding="0" cellspacing="0" width="100%">
             <!-- start logo -->
-            <tr>
-              <td align="center" bgcolor="#D2C7BA">
-                <!--[if (gte mso 9)|(IE)]>
-                <table align="center" border="0" cellpadding="0" cellspacing="0" width="600">
-                <tr>
-                <td align="center" valign="top" width="600">
-                <![endif]-->
-                <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px;">
-                  <tr>
-                    <td align="center" valign="top" style="padding: 36px 24px;">
-                      <a href="https://sendgrid.com" target="_blank" style="display: inline-block;">
-                        <img src="./img/paste-logo-light@2x.png" alt="Logo" border="0" width="48" style="display: block; width: 48px; max-width: 48px; min-width: 48px;">
-                      </a>
-                    </td>
-                  </tr>
-                </table>
-                <!--[if (gte mso 9)|(IE)]>
-                </td>
-                </tr>
-                </table>
-                <![endif]-->
-              </td>
-            </tr>
+            <div>
+            </div>
             <!-- end logo -->
             <!-- start hero -->
             <tr>
